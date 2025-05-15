@@ -1,0 +1,117 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MoneySenderGui"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 260, 0, 200)
+mainFrame.Position = UDim2.new(0, 100, 0, 100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true
+
+local destroyBtn = Instance.new("TextButton")
+destroyBtn.Size = UDim2.new(0, 24, 0, 24)
+destroyBtn.Position = UDim2.new(1, -28, 0, 4)
+destroyBtn.Text = "X"
+destroyBtn.TextColor3 = Color3.new(1, 0, 0)
+destroyBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+destroyBtn.BorderSizePixel = 0
+destroyBtn.Parent = mainFrame
+
+destroyBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+local nameBox = Instance.new("TextBox")
+nameBox.Size = UDim2.new(0, 220, 0, 30)
+nameBox.Position = UDim2.new(0, 20, 0, 40)
+nameBox.PlaceholderText = "Enter player name"
+nameBox.ClearTextOnFocus = false
+nameBox.TextColor3 = Color3.new(1, 1, 1)
+nameBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+nameBox.BorderSizePixel = 0
+nameBox.Parent = mainFrame
+
+local timesBox = Instance.new("TextBox")
+timesBox.Size = UDim2.new(0, 220, 0, 30)
+timesBox.Position = UDim2.new(0, 20, 0, 80)
+timesBox.PlaceholderText = "How many times?"
+timesBox.ClearTextOnFocus = false
+timesBox.Text = "1"
+timesBox.TextColor3 = Color3.new(1, 1, 1)
+timesBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+timesBox.BorderSizePixel = 0
+timesBox.Parent = mainFrame
+
+local sendButton = Instance.new("TextButton")
+sendButton.Size = UDim2.new(0, 100, 0, 30)
+sendButton.Position = UDim2.new(0, 20, 0, 120)
+sendButton.Text = "Send Money"
+sendButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+sendButton.TextColor3 = Color3.new(1, 1, 1)
+sendButton.BorderSizePixel = 0
+sendButton.Parent = mainFrame
+
+local timeLeftLabel = Instance.new("TextLabel")
+timeLeftLabel.Size = UDim2.new(0, 220, 0, 20)
+timeLeftLabel.Position = UDim2.new(0, 20, 0, 155)
+timeLeftLabel.Text = ""
+timeLeftLabel.TextColor3 = Color3.new(1, 1, 1)
+timeLeftLabel.BackgroundTransparency = 1
+timeLeftLabel.Parent = mainFrame
+
+local progressLabel = Instance.new("TextLabel")
+progressLabel.Size = UDim2.new(0, 220, 0, 20)
+progressLabel.Position = UDim2.new(0, 20, 0, 175)
+progressLabel.Text = ""
+progressLabel.TextColor3 = Color3.new(1, 1, 1)
+progressLabel.BackgroundTransparency = 1
+progressLabel.Parent = mainFrame
+
+local running = false
+
+sendButton.MouseButton1Click:Connect(function()
+    if running then return end
+
+    local targetName = nameBox.Text
+    local times = tonumber(timesBox.Text)
+    if not targetName or targetName == "" then
+        warn("Please enter a valid player name.")
+        return
+    end
+    if not times or times <= 0 then
+        warn("Please enter a valid number of times.")
+        return
+    end
+
+    running = true
+
+    for i = 1, times do
+    -- Send the message
+    local message = "give/" .. targetName .. "/1000000"
+    game:GetService("ReplicatedStorage"):WaitForChild("DefaultChatSystemChatEvents")
+        :WaitForChild("SayMessageRequest"):FireServer(message, "All")
+
+    -- Update progress label after sending
+    progressLabel.Text = "Progress: " .. i .. " / " .. times
+
+    -- Countdown 31 seconds with live update (except after last message)
+    if i < times then
+        local countdown = 31
+        while countdown > 0 do
+            timeLeftLabel.Text = "Time left: " .. countdown .. " seconds"
+            wait(1)
+            countdown = countdown - 1
+        end
+    end
+end
+
+    progressLabel.Text = "Progress: " .. times .. " / " .. times
+    timeLeftLabel.Text = "Done!"
+    running = false
+end)
